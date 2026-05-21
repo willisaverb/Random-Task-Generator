@@ -3,11 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LibraryGO Letter Generator</title>
+  <title>Library Letter Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/grcstyle.css">
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body class="email-generator-body">
   <nav>
@@ -27,14 +32,14 @@
         <img src="https://placehold.co/150x60?text=Library+Logo" alt="Library Logo" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
         <span>Library Logo</span>
       </div>
-      <h1>LibraryGO Letter Generator</h1>
+      <h1>Library Letter Generator</h1>
     </header>
 
     <div class="instructions">
       <h3>How to use this tool:</h3>
       <ol>
-        <li><strong>Select</strong> the appropriate letter template from the dropdown.</li>
-        <li><strong>Enter</strong> the customer's first name to personalize the letter.</li>
+        <li><strong>Select</strong> your team and the appropriate letter template from the dropdowns.</li>
+        <li><strong>Fill in</strong> the required fields to personalize the letter.</li>
         <li><strong>Click</strong> "Generate Letter" to prepare the text.</li>
         <li><strong>Use</strong> the copy buttons to quickly grab the subject and body.</li>
         <li><strong>Paste</strong> into your email client and you're ready to send!</li>
@@ -43,19 +48,45 @@
 
     <div class="form-section">
       <div class="form-group">
-        <label for="letterType">Select Letter Type:</label>
-        <select id="letterType">
-          <option value="thirdFail">Third Failed Delivery</option>
-          <option value="recommencement">Service Recommencement</option>
-          <option value="fourthFail">Fourth Failed Delivery</option>
-          <option value="overdue">Overdue Item</option>
-          <option value="pictureBooks">Transition to Picture Books</option>
+        <label for="teamSelect">Select Team:</label>
+        <select id="teamSelect" onchange="updateLetterTypes()">
+          <option value="librarygo">LibraryGO</option>
+          <option value="cx">CX</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="customerName">Customer First Name:</label>
-        <input type="text" id="customerName" placeholder="e.g. John">
+        <label for="letterType">Select Letter Type:</label>
+        <select id="letterType" onchange="updateFields()">
+          <!-- Options populated by JS -->
+        </select>
+      </div>
+
+      <div id="dynamicFields">
+        <div class="form-group" id="group-customerName">
+          <label for="customerName">Customer Name:</label>
+          <input type="text" id="customerName" placeholder="e.g. John">
+        </div>
+
+        <div class="form-group hidden" id="group-returnDate">
+          <label for="returnDate">Return Date (DD Month YYYY):</label>
+          <input type="text" id="returnDate" placeholder="e.g. 25 December 2023">
+        </div>
+
+        <div class="form-group hidden" id="group-itemTitle">
+          <label for="itemTitle">Item Title:</label>
+          <input type="text" id="itemTitle" placeholder="e.g. The Great Gatsby">
+        </div>
+
+        <div class="form-group hidden" id="group-itemBarcode">
+          <label for="itemBarcode">Item Barcode:</label>
+          <input type="text" id="itemBarcode" placeholder="e.g. 12345678">
+        </div>
+
+        <div class="form-group hidden" id="group-location">
+          <label for="location">Location:</label>
+          <input type="text" id="location" placeholder="e.g. Hurstville">
+        </div>
       </div>
 
       <button class="generate-btn" onclick="generateLetter()">Generate Letter</button>
@@ -86,57 +117,133 @@
 
   <script>
     const letters = {
-      thirdFail: {
-        subject: "LibraryGO – Third Failed Delivery",
-        body: `<p>Dear {name},</p>
-        <p>We’ve noticed there have been three unsuccessful delivery attempts for your child’s LibraryGO service this calendar year. As outlined in the welcome email you received upon joining, we will no longer be able to deliver items to your child’s early learning centre.</p>
-        <p>The good news is that your child will now transition to a Georges River Junior Library Membership. This ensures they can continue to borrow books, toys and other items by visiting any Georges River Libraries branch in person. The library card will be posted to the address we have on file. Please return any items currently on loan to a Georges River Libraries branch at your earliest convenience.</p>
-        <p>If you’d prefer to keep receiving LibraryGO deliveries, please contact our team within the next seven days. If we don’t hear from you, we’ll go ahead with updating the membership.</p>
-        <p>Thank you for being a valued member of LibraryGO. We look forward to welcoming you in our libraries soon.</p>
-        <p>Kind regards,<br>The LibraryGO Team</p>`
+      librarygo: {
+        thirdFail: {
+          name: "Third Failed Delivery",
+          subject: "LibraryGO – Third Failed Delivery",
+          fields: ["customerName"],
+          body: `<p>Dear {name},</p>
+          <p>We’ve noticed there have been three unsuccessful delivery attempts for your child’s LibraryGO service this calendar year. As outlined in the welcome email you received upon joining, we will no longer be able to deliver items to your child’s early learning centre.</p>
+          <p>The good news is that your child will now transition to a Georges River Junior Library Membership. This ensures they can continue to borrow books, toys and other items by visiting any Georges River Libraries branch in person. The library card will be posted to the address we have on file. Please return any items currently on loan to a Georges River Libraries branch at your earliest convenience.</p>
+          <p>If you’d prefer to keep receiving LibraryGO deliveries, please contact our team within the next seven days. If we don’t hear from you, we’ll go ahead with updating the membership.</p>
+          <p>Thank you for being a valued member of LibraryGO. We look forward to welcoming you in our libraries soon.</p>
+          <p>Kind regards,<br>The LibraryGO Team</p>`
+        },
+        recommencement: {
+          name: "Service Recommencement",
+          subject: "LibraryGO – Service Recommencement",
+          fields: ["customerName"],
+          body: `<p>Dear {name},</p>
+          <p>Thank you for advising us that you wish to continue receiving the LibraryGO service.</p>
+          <p>Please note that if there is another unsuccessful delivery attempt for your child’s LibraryGO service this calendar year, we will no longer be able to deliver items to your child’s early learning centre. If this occurs, your child will transition to a Georges River Junior Library Membership.</p>
+          <p>Thank you for being a valued member of LibraryGO.</p>
+          <p>Kind regards,<br>The LibraryGO Team</p>`
+        },
+        fourthFail: {
+          name: "Fourth Failed Delivery",
+          subject: "LibraryGO – Fourth Failed Delivery",
+          fields: ["customerName"],
+          body: `<p>Dear {name},</p>
+          <p>There have now been four unsuccessful delivery attempts for your child’s LibraryGO service this calendar year. As outlined in our previous correspondence, all further LibraryGO deliveries are now cancelled.</p>
+          <p>Your child’s LibraryGO membership has now been converted to a Georges River Junior Library Membership. This ensures they can continue to borrow books, toys and other items by visiting any Georges River Libraries branch in person. The library card will be posted to the address we have on file. Please return any items currently on loan to a Georges River Libraries branch at your earliest convenience.</p>
+          <p>Thank you for being a valued member of LibraryGO. We look forward to welcoming you to our libraries soon.</p>
+          <p>If you have any questions, or believe this email has been sent in error, please email library@georgesriver.nsw.gov.au to let us know.</p>
+          <p>Kind regards,<br>The LibraryGO Team</p>`
+        },
+        overdue: {
+          name: "Suspension of Service",
+          subject: "LibraryGO – Suspension of Service",
+          fields: ["customerName"],
+          body: `<p>Dear {name},</p>
+          <p>We’d like to let you know that there’s currently an overdue item on your child’s LibraryGO account. As a result, your service has been suspended.</p>
+          <p>To reactivate your LibraryGO service, please return the overdue item to any Georges River Libraries branch at your earliest convenience.</p>
+          <p>You can check your account, including the status of any loaned items, by logging into georgesriver.spydus.com. Select ‘Forgot Your Password’ and follow the instructions if logging in for the first time. Alternatively, email library@georgesriver.nsw.gov.au with your enquiry and a staff member will respond to you promptly.</p>
+          <p>Thanks for your attention to this matter.</p>
+          <p>Kind regards,<br>The LibraryGO Team</p>`
+        },
+        pictureBooks: {
+          name: "Transition to Picture Books",
+          subject: "Congratulations - your child has just graduated to picture books!",
+          fields: ["customerName"],
+          body: `<p>Dear {name},</p>
+          <p>We’re delighted to celebrate your child’s recent third birthday with you! At this age, many children begin to enjoy the imaginative stories found in picture books, moving beyond the simpler content of board books.</p>
+          <p>To support this exciting stage, we’ve updated your child’s profile to include picture books instead of board books in their future LibraryGO deliveries.</p>
+          <p>If you feel this change isn’t quite right for your child, please let us know — we’re happy to continue delivering board books until they’re ready for the next step.</p>
+          <p>Kind regards,<br>The LibraryGO Team</p>`
+        }
       },
-      recommencement: {
-        subject: "LibraryGO – Service Recommencement",
-        body: `<p>Dear {name},</p>
-        <p>Thank you for advising us that you wish to continue receiving the LibraryGO service.</p>
-        <p>Please note that if there is another unsuccessful delivery attempt for your child’s LibraryGO service this calendar year, we will no longer be able to deliver items to your child’s early learning centre. If this occurs, your child will transition to a Georges River Junior Library Membership.</p>
-        <p>Thank you for being a valued member of LibraryGO.</p>
-        <p>Kind regards,<br>The LibraryGO Team</p>`
-      },
-      fourthFail: {
-        subject: "LibraryGO – Fourth Failed Delivery",
-        body: `<p>Dear {name},</p>
-        <p>There have now been four unsuccessful delivery attempts for your child’s LibraryGO service this calendar year. As outlined in our previous correspondence, all further LibraryGO deliveries are now cancelled.</p>
-        <p>Your child’s LibraryGO membership has now been converted to a Georges River Junior Library Membership. This ensures they can continue to borrow books, toys and other items by visiting any Georges River Libraries branch in person. The library card will be posted to the address we have on file. Please return any items currently on loan to a Georges River Libraries branch at your earliest convenience.</p>
-        <p>Thank you for being a valued member of LibraryGO. We look forward to welcoming you to our libraries soon.</p>
-        <p>If you have any questions, or believe this email has been sent in error, please email library@georgesriver.nsw.gov.au to let us know.</p>
-        <p>Kind regards,<br>The LibraryGO Team</p>`
-      },
-      overdue: {
-        subject: "LibraryGO – Suspension of Service",
-        body: `<p>Dear {name},</p>
-        <p>We’d like to let you know that there’s currently an overdue item on your child’s LibraryGO account. As a result, your service has been suspended.</p>
-        <p>To reactivate your LibraryGO service, please return the overdue item to any Georges River Libraries branch at your earliest convenience.</p>
-        <p>You can check your account, including the status of any loaned items, by logging into georgesriver.spydus.com. Select ‘Forgot Your Password’ and follow the instructions if logging in for the first time. Alternatively, email library@georgesriver.nsw.gov.au with your enquiry and a staff member will respond to you promptly.</p>
-        <p>Thanks for your attention to this matter.</p>
-        <p>Kind regards,<br>The LibraryGO Team</p>`
-      },
-      pictureBooks: {
-        subject: "Congratulations - your child has just graduated to picture books!",
-        body: `<p>Dear {name},</p>
-        <p>We’re delighted to celebrate your child’s recent third birthday with you! At this age, many children begin to enjoy the imaginative stories found in picture books, moving beyond the simpler content of board books.</p>
-        <p>To support this exciting stage, we’ve updated your child’s profile to include picture books instead of board books in their future LibraryGO deliveries.</p>
-        <p>If you feel this change isn’t quite right for your child, please let us know — we’re happy to continue delivering board books until they’re ready for the next step.</p>
-        <p>Kind regards,<br>The LibraryGO Team</p>`
+      cx: {
+        damagedItem: {
+          name: "Damaged Item Template",
+          subject: "Your library item is damaged",
+          fields: ["customerName", "returnDate", "itemTitle", "itemBarcode", "location"],
+          body: `<p>Dear {name},</p>
+          <p>I am emailing to let you know that the item you returned to Georges River Libraries on {returnDate} is damaged.</p>
+          <p>{title}</p>
+          <p>{barcode}</p>
+          <p>[Image Placeholder]</p>
+          <p>The item is being held at {location} Library and is currently available for you to view. If you would like to collect and keep the item once payment has been made, you are welcome to do so. Please make payment as soon as possible.</p>
+          <p>If you have any further questions, please do not hesitate to contact:</p>
+          <p>library@georgesriver.nsw.gov.au</p>
+          <p>Yours sincerely,</p>
+          <p>Georges River Libraries</p>`
+        }
       }
     };
 
-    function generateLetter() {
+    function updateLetterTypes() {
+      const team = document.getElementById('teamSelect').value;
+      const letterTypeSelect = document.getElementById('letterType');
+      letterTypeSelect.innerHTML = '';
+
+      for (const key in letters[team]) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = letters[team][key].name;
+        letterTypeSelect.appendChild(option);
+      }
+      updateFields();
+    }
+
+    function updateFields() {
+      const team = document.getElementById('teamSelect').value;
       const type = document.getElementById('letterType').value;
-      const name = document.getElementById('customerName').value.trim() || 'LibraryGO member';
-      const letter = letters[type];
-      document.getElementById('subjectOutput').value = letter.subject;
-      document.getElementById('bodyOutput').value = letter.body.replace('{name}', name);
+      const activeFields = letters[team][type].fields;
+
+      const allFieldGroups = document.querySelectorAll('#dynamicFields .form-group');
+      allFieldGroups.forEach(group => {
+        const fieldId = group.id.replace('group-', '');
+        if (activeFields.includes(fieldId)) {
+          group.classList.remove('hidden');
+        } else {
+          group.classList.add('hidden');
+        }
+      });
+    }
+
+    function generateLetter() {
+      const team = document.getElementById('teamSelect').value;
+      const type = document.getElementById('letterType').value;
+      const letter = letters[team][type];
+
+      let subject = letter.subject;
+      let body = letter.body;
+
+      // Replace placeholders
+      const name = document.getElementById('customerName').value.trim() || (team === 'librarygo' ? 'LibraryGO member' : 'Valued Member');
+      const returnDate = document.getElementById('returnDate').value.trim() || '[return date]';
+      const title = document.getElementById('itemTitle').value.trim() || '[Title]';
+      const barcode = document.getElementById('itemBarcode').value.trim() || '[Barcode]';
+      const location = document.getElementById('location').value.trim() || '[location]';
+
+      body = body.replace(/{name}/g, name);
+      body = body.replace(/{returnDate}/g, returnDate);
+      body = body.replace(/{title}/g, title);
+      body = body.replace(/{barcode}/g, barcode);
+      body = body.replace(/{location}/g, location);
+
+      document.getElementById('subjectOutput').value = subject;
+      document.getElementById('bodyOutput').value = body;
     }
 
     async function copyToClipboard(elementId) {
@@ -170,6 +277,9 @@
         btn.classList.remove('success');
       }, 2000);
     }
+
+    // Initialize
+    updateLetterTypes();
   </script>
 </body>
 </html>
